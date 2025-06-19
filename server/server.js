@@ -1,8 +1,14 @@
+
 import express from 'express';
 import cors from 'cors';
 import 'dotenv/config';
 import connectDB from './configs/mongodb.js';
-import { clerkWebhooks } from './controllers/webhooks.js';
+import { clerkWebhooks, stripeWebhooks } from './controllers/webhooks.js';
+import educatorRoutes from './routes/educatorRoutes.js';
+import { clerkMiddleware } from '@clerk/express';
+import connectCloudinary from './configs/cloudinary.js';
+import courseRouter from './routes/courseRoutes.js';
+import userRouter from './routes/userRoutes.js';
 
 // Initialize Express
 const app = express();
@@ -12,18 +18,26 @@ const app = express();
 await connectDB();
 
 
+// Connect to Cloudinary Storage 
+await connectCloudinary();
+
 // Middlewares
 app.use(cors());
+app.use(express.json()) // Chuyển đổi request body từ JSON string thành JavaScript object (phải là JS Object thì BE mới xử lý được)
+app.use(clerkMiddleware()) // thêm property 'auth' vào req; verify token
 
 
 // Routes
-app.get('/', (req, res) => res.send('API Working'));
-app.post('/clerk', express.json(), clerkWebhooks)
+app.get('/', (req, res) => res.send('BackEnd are working from SherlockNguyenDev'));
+app.use('/api/educator', educatorRoutes);
+app.use('/api/course', courseRouter);
+app.use('/api/user', userRouter)
 
+app.post('/clerk', clerkWebhooks);
+app.post('/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
 
 // Port
 const PORT = process.env.PORT || 5000;
-
 app.listen(PORT, () => {
     console.log(`Hello guys from BE: ${PORT}`)
 });
