@@ -63,14 +63,14 @@ const stripeInstance = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 // Đây là đoạn backend xử lý webhook khi Stripe chủ động gửi thông báo về trạng thái thanh toán (thành công hoặc thất bại).
 export const stripeWebhooks = async (request, response) => {
-    const signature = request.headers['stripe-signature'];
+    const sig = request.headers['stripe-signature'];
 
     let event;
 
     try {
         event = Stripe.webhooks.constructEvent(
             request.body,
-            signature,
+            sig,
             process.env.STRIPE_WEBHOOK_SECRET
         );
 
@@ -114,7 +114,7 @@ export const stripeWebhooks = async (request, response) => {
             const paymentIntentId = paymentIntent.id;
 
             const session = await stripeInstance.checkout.sessions.list({
-                paymentIntent: paymentIntentId
+                payment_intent: paymentIntentId
             });
 
             const { purchaseId } = session.data[0].metadata;
