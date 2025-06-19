@@ -86,7 +86,7 @@ export const stripeWebhooks = async (request, response) => {
 
             // tìm 'phiên thanh toán' từ stripe để biết mình thanh toán đơn nào
             const session = await stripeInstance.checkout.sessions.list({
-                paymentIntent: paymentIntentId
+                payment_intent: paymentIntentId
             });
 
             // từ phiên thanh toán đó tìm ra đơn hàng
