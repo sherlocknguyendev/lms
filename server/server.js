@@ -22,7 +22,7 @@ await connectDB();
 await connectCloudinary();
 
 // Middlewares
-app.use(cors());
+app.use(cors()); // accept all domain access data each other
 app.use(express.json()) // Chuyển đổi request body từ JSON string thành JavaScript object (phải là JS Object thì BE mới xử lý được)
 app.use(clerkMiddleware()) // thêm property 'auth' vào req; verify token
 

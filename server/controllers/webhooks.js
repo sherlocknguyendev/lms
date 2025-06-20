@@ -3,7 +3,6 @@ import { Webhook } from "svix";
 import User from "../models/User.js";
 import Purchase from "../models/Purchase.js";
 import Course from "../models/Course.js";
-
 import Stripe from 'stripe';
 
 // API Controller Function to Manage Clerk User with database
@@ -73,15 +72,19 @@ export const stripeWebhooks = async (request, response) => {
             sig,
             process.env.STRIPE_WEBHOOK_SECRET
         );
+        console.log('event', event);
+
 
     } catch (error) {
-        return response.sendStatus(400);
+        return response.status(400).send(`Webhook Error: ${error.message}`);
     }
 
     switch (event.type) {
+
         case 'payment_intent.succeeded': {
             const paymentIntent = event.data.object;
             const paymentIntentId = paymentIntent.id;
+            console.log('paymentIntentId', paymentIntentId);
 
 
             // tìm 'phiên thanh toán' từ stripe để biết mình thanh toán đơn nào
@@ -89,12 +92,16 @@ export const stripeWebhooks = async (request, response) => {
                 payment_intent: paymentIntentId
             });
 
-            // từ phiên thanh toán đó tìm ra đơn hàng
+            // từ phiên thanh toán đó tìm ra đơn hàng   
             const { purchaseId } = session.data[0].metadata;
+            console.log("purchaseId", purchaseId);
+
 
             const purchaseData = await Purchase.findById(purchaseId);
             const userData = await User.findById(purchaseData.userId);
             const courseData = await Course.findById(purchaseData.courseId.toString());
+            console.log('userData', userData);
+            console.log('courseData', courseData);
 
             courseData.enrolledStudents.push(userData);
             await courseData.save();
@@ -129,5 +136,7 @@ export const stripeWebhooks = async (request, response) => {
         default:
             console.log(`Unhandled event type ${event.type}`);
     }
+
+    response.json({ received: true });
 
 };
