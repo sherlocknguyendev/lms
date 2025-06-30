@@ -2,6 +2,8 @@
 - Khởi tạo dự án dùng Vite + JS
 - App sử dụng Clerk để đăng nhập/đăng ký
 - Dùng Cloudinary để lưu trữ ảnh (tránh kích thước data ở database to + hiệu năng web tăng)
+- Dùng axios để gọi apis
+- Toast để tạo notification (success/error)
 
 
 - Class là "khuôn mẫu" như bản thiết kế xe ô tô

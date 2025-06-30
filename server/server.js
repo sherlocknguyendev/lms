@@ -23,17 +23,17 @@ await connectCloudinary();
 
 // Middlewares
 app.use(cors()); // accept all domain access data each other
-app.use(express.json()) // Chuyển đổi request body từ JSON string thành JavaScript object (phải là JS Object thì BE mới xử lý được)
+// app.use(express.json()) // Chuyển đổi request body từ JSON string thành JavaScript object (phải là JS Object thì BE mới xử lý được)
 app.use(clerkMiddleware()) // thêm property 'auth' vào req; verify token
 
 
 // Routes
 app.get('/', (req, res) => res.send('BackEnd are working from SherlockNguyenDev'));
-app.use('/api/educator', educatorRoutes);
-app.use('/api/course', courseRouter);
-app.use('/api/user', userRouter)
+app.use('/api/educator', express.json(), educatorRoutes);
+app.use('/api/course', express.json(), courseRouter);
+app.use('/api/user', express.json(), userRouter)
 
-app.post('/clerk', clerkWebhooks);
+app.post('/clerk', express.json(), clerkWebhooks);
 app.post('/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);
 
 // Port

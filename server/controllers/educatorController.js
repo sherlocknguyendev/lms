@@ -3,11 +3,13 @@ import { clerkClient } from '@clerk/express'
 import { v2 as cloudinary } from 'cloudinary';
 import Course from '../models/Course.js';
 import Purchase from '../models/Purchase.js';
+import User from '../models/User.js';
+
 
 // Update role to educator
 export const updateRoleToEducator = async (req, res) => {
     try {
-        const userId = req.auth().userId; // sau khi verify token thì lưu vào userIduserId
+        const userId = req.auth.userId; // sau khi verify token thì lưu vào userIduserId
         await clerkClient.users.updateUserMetadata(userId, {
             publicMetadata: {
                 role: 'educator'
@@ -26,7 +28,7 @@ export const addCourse = async (req, res) => {
     try {
         const { courseData } = req.body;
         const imageFile = req.file;
-        const educatorId = req.auth().userId;
+        const educatorId = req.auth.userId;
 
         if (!imageFile) {
             return res.json({ success: false, message: 'Thumbnail Not Attached' });
@@ -52,7 +54,7 @@ export const addCourse = async (req, res) => {
 // Get Educator Courses
 export const getEducatorCourses = async (req, res) => {
     try {
-        const educator = req.auth().userId;
+        const educator = req.auth.userId;
         const courses = await Course.find({ educator });
         res.json({ success: true, courses });
 
@@ -66,7 +68,7 @@ export const getEducatorCourses = async (req, res) => {
 // Get Educator Dashboard Data  (Total Earning, Enrolled Students, No. of Courses)
 export const educatorDashboardData = async (req, res) => {
     try {
-        const educator = req.auth().userId;
+        const educator = req.auth.userId;
         const courses = await Course.find({ educator });
         const totalCourses = courses.length;
 
@@ -119,7 +121,7 @@ export const getEnrolledStudentsData = async (req, res) => {
 
     try {
 
-        const educator = req.auth().userId;
+        const educator = req.auth.userId;
         const courses = await Course.find({ educator });
         const courseIds = courses.map(course => course._id);
 

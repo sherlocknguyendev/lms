@@ -8,7 +8,7 @@ import CourseProgress from '../models/CourseProgress.js';
 export const getUserData = async (req, res) => {
     try {
 
-        const userId = req.auth().userId;
+        const userId = req.auth.userId;
         const user = await User.findById(userId);
 
 
@@ -27,7 +27,7 @@ export const getUserData = async (req, res) => {
 // User Enrolled Courses with Lecture Links
 export const userEnrolledCourses = async (req, res) => {
     try {
-        const userId = req.auth().userId;
+        const userId = req.auth.userId;
         const userData = await User.findById(userId).populate('enrolledCourses');
 
         res.json({ success: true, enrolledCourses: userData.enrolledCourses })
@@ -43,7 +43,7 @@ export const purchaseCourse = async (req, res) => {
 
         const { origin } = req.headers;
         const { courseId } = req.body;
-        const userId = req.auth().userId;
+        const userId = req.auth.userId;
         const userData = await User.findById(userId);
         const courseData = await Course.findById(courseId)
 
@@ -64,7 +64,7 @@ export const purchaseCourse = async (req, res) => {
         const currency = process.env.CURRENCY.toLowerCase();
 
         // Creating line items to for Stripe
-        const line_itmes = [{
+        const line_items = [{
             price_data: {
                 currency,
                 product_data: {
@@ -75,14 +75,12 @@ export const purchaseCourse = async (req, res) => {
             quantity: 1
         }]
 
-        console.log('newPurchase._id', newPurchase._id);
-
 
         // Tạo 'phiên thành toán' và gửi dữ liệu đó cho Stripe
         const session = await stripeInstance.checkout.sessions.create({
             success_url: `${origin}/loading/my-enrollments`,
             cancel_url: `${origin}/`,
-            line_items: line_itmes,
+            line_items: line_items,
             mode: 'payment',
             metadata: {
                 purchaseId: newPurchase._id.toString()

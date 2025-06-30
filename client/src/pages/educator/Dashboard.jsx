@@ -2,22 +2,44 @@ import React, { useContext, useEffect, useState } from 'react'
 import { AppContext } from '../../context/AppContext'
 import { assets, dummyDashboardData } from '../../assets/assets';
 import Loading from '../../components/student/Loading';
+import { toast } from 'react-toastify';
+import axios from 'axios';
 
 const Dashboard = () => {
 
-    const { currency } = useContext(AppContext);
-    const [dashboardData, setDashboardData] = useState(null);
+    const { currency, backendUrl, getToken, isEducator } = useContext(AppContext);
+    const [dataDashboard, setDataDashboard] = useState(null);
 
     const fetchDashboardData = async () => {
-        setDashboardData(dummyDashboardData)
+        try {
+            const token = await getToken();
+            const { data } = await axios.get(`${backendUrl}/api/educator/dashboard`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            })
+
+
+            if (data.success) {
+                setDataDashboard(data.dataDashboard)
+            } else {
+                toast.error(data.message)
+            }
+
+        } catch (error) {
+            toast.error(error.message)
+        }
     };
 
 
     useEffect(() => {
-        fetchDashboardData()
-    }, [])
+        if (isEducator) {
+            fetchDashboardData()
+        }
+    }, [isEducator])
 
-    return dashboardData ? (
+
+    return dataDashboard ? (
 
         <div className='min-h-screen flex flex-col items-start justify-between gap-8 md:p-8 md:pb-0 p-4 pt-8 pb-0'>
             <div className='space-y-5'>
@@ -25,7 +47,7 @@ const Dashboard = () => {
                     <div className='flex items-center gap-3 shadow-card border border-blue -500 p-4 w-56 rounded-md'>
                         <img src={assets.patients_icon} alt="patients_icon" />
                         <div>
-                            <p className='text-2xl font-medium text-gray-600'>{dashboardData.enrolledStudentsData.length}</p>
+                            <p className='text-2xl font-medium text-gray-600'>{dataDashboard.enrolledStudentsData.length}</p>
                             <p className='text-base text-gray-500'>Total Enrolments</p>
                         </div>
                     </div>
@@ -33,7 +55,7 @@ const Dashboard = () => {
                     <div className='flex items-center gap-3 shadow-card border border-blue -500 p-4 w-56 rounded-md'>
                         <img src={assets.appointments_icon} alt="appointments_icon" />
                         <div>
-                            <p className='text-2xl font-medium text-gray-600'>{dashboardData.totalCourses}</p>
+                            <p className='text-2xl font-medium text-gray-600'>{dataDashboard.totalCourses}</p>
                             <p className='text-base text-gray-500'>Total Courses</p>
                         </div>
                     </div>
@@ -41,7 +63,7 @@ const Dashboard = () => {
                     <div className='flex items-center gap-3 shadow-card border border-blue -500 p-4 w-56 rounded-md'>
                         <img src={assets.earning_icon} alt="earning_icon" />
                         <div>
-                            <p className='text-2xl font-medium text-gray-600'>{dashboardData.totalEarnings}</p>
+                            <p className='text-2xl font-medium text-gray-600'>{dataDashboard.totalEarnings}</p>
                             <p className='text-base text-gray-500'>Total Earnings</p>
                         </div>
                     </div>
@@ -59,7 +81,7 @@ const Dashboard = () => {
                                 </tr>
                             </thead>
                             <tbody className='text-sm text-gray-500'>
-                                {dashboardData.enrolledStudentsData.map((item, index) => (
+                                {dataDashboard.enrolledStudentsData.map((item, index) => (
                                     <tr key={index} className='border-b border-gray-500/20'>
                                         <td className='px-4 py-3 text-center hidden sm:table-cell'>{index + 1}</td>
                                         <td className='md:px-4 px-2 py-3 flex items-center space-x-3'>
