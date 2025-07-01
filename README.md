@@ -4,6 +4,8 @@
 - Dùng Cloudinary để lưu trữ ảnh (tránh kích thước data ở database to + hiệu năng web tăng)
 - Dùng axios để gọi apis
 - Toast để tạo notification (success/error)
+- Stripe để hỗ trợ thanh toán khi mua khóa học
+- MongoDB quản lý dữ liệu
 
 
 - Class là "khuôn mẫu" như bản thiết kế xe ô tô

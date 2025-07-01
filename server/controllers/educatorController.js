@@ -80,7 +80,7 @@ export const educatorDashboardData = async (req, res) => {
             status: 'completed'
         });
 
-        const totalEarnings = purchases.reduce((sum, purchase) => sum + purchase.amount, 0);
+        const totalEarnings = purchases.reduce((sum, purchase) => sum + purchase.amount, 0).toFixed(2);
 
         // Collect unique enrolled student IDs with their course titles
         // Đếm enrollments (lượt đăng ký) (tính tất cả các course lại)
