@@ -31,7 +31,7 @@ app.use(clerkMiddleware()) // thêm property 'auth' vào req; verify token
 app.get('/', (req, res) => res.send('BackEnd are working from SherlockNguyenDev'));
 app.use('/api/educator', express.json(), educatorRoutes);
 app.use('/api/course', express.json(), courseRouter);
-app.use('/api/user', express.json(), userRouter)
+app.use('/api/user', express.json(), userRouter);
 
 app.post('/clerk', express.json(), clerkWebhooks);
 app.post('/stripe', express.raw({ type: 'application/json' }), stripeWebhooks);

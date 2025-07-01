@@ -82,9 +82,15 @@ export const purchaseCourse = async (req, res) => {
             cancel_url: `${origin}/`,
             line_items: line_items,
             mode: 'payment',
-            metadata: {
-                purchaseId: newPurchase._id.toString()
+            // metadata: {
+            //     purchaseId: newPurchase._id.toString()
+            // },
+            payment_intent_data: {
+                metadata: {
+                    purchaseId: newPurchase._id.toString()
+                }
             },
+            payment_method_types: ['card'],
 
         })
 
@@ -130,7 +136,6 @@ export const updateUserCourseProgress = async (req, res) => {
 // GET USER COURSE PROGRESS
 export const getUserCourseProgress = async (req, res) => {
     try {
-
         const userId = req.auth.userId;
         const { courseId } = req.body;
         const progressData = await CourseProgress.findOne({ userId, courseId });

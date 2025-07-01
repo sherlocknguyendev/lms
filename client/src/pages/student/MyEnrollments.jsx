@@ -9,7 +9,6 @@ import { toast } from 'react-toastify';
 
 const MyEnrollments = () => {
 
-
     const { enrolledCourses, calculateCourseDuration, navigate,
         userData, fetchUserEnrolledCourses, backendUrl,
         getToken, calculateNoOfLectures
@@ -88,13 +87,13 @@ const MyEnrollments = () => {
                                     {calculateCourseDuration(course)}
                                 </td>
                                 <td className='px-4 py-3 max-sm:hidden'>
-                                    {progressArray[index] && `${progressArray[index].lectureCompleted} / ${progressArray[index].totalLectures}`} <span>Lectures</span>
+                                    {progressArray[index] ? `${progressArray[index].lectureCompleted} / ${progressArray[index].totalLectures}` : '...'} <span>Lectures</span>
                                 </td>
                                 <td className='px-4 py-3 max-sm:text-right'>
                                     <button
                                         onClick={() => navigate('/player/' + course._id)}
                                         className='px-3 sm:px-5 py-1.5 sm:py-2 bg-blue-600 max-sm:text-xs text-white'>
-                                        {progressArray[index].lectureCompleted === progressArray[index].totalLectures ? 'Completed' : 'On Going'}
+                                        {progressArray[index]?.lectureCompleted === progressArray[index]?.totalLectures ? 'Completed' : 'On Going'}
                                     </button>
                                 </td>
                             </tr>

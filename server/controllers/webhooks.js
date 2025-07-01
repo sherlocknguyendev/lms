@@ -78,85 +78,129 @@ export const stripeWebhooks = async (request, response) => {
         return response.status(400).send(`Webhook Error: ${error.message}`);
     }
 
-    switch (event.type) {
+    // switch (event.type) {
 
-        case 'payment_intent.succeeded': {
-            try {
-                const paymentIntent = event.data.object;
-                const paymentIntentId = paymentIntent.id;
-                console.log('paymentIntentId', paymentIntentId);
-
-
-                // tìm 'phiên thanh toán' từ stripe để biết mình thanh toán đơn nào
-                const session = await stripeInstance.checkout.sessions.list({
-                    payment_intent: paymentIntentId
-                });
-
-                // từ phiên thanh toán đó tìm ra đơn hàng
-                if (session.data.length === 0) {
-                    console.log("No session found for this payment_intent");
-                    return response.status(400).send("No session found");
-                }
-
-                const { purchaseId } = session.data[0].metadata;
-                console.log("purchaseId", purchaseId);
+    //     case 'payment_intent.succeeded': {
+    //         try {
+    //             const paymentIntent = event.data.object;
+    //             const paymentIntentId = paymentIntent.id;
+    //             console.log('paymentIntentId', paymentIntentId);
 
 
-                const purchaseData = await Purchase.findById(purchaseId);
-                const userData = await User.findById(purchaseData.userId);
-                const courseData = await Course.findById(purchaseData.courseId.toString());
-                console.log('userData', userData);
-                console.log('courseData', courseData);
+    //             // tìm 'phiên thanh toán' từ stripe để biết mình thanh toán đơn nào
+    //             const session = await stripeInstance.checkout.sessions.list({
+    //                 payment_intent: paymentIntentId
+    //             });
 
-                courseData.enrolledStudents.push(userData);
-                await courseData.save();
+    //             // từ phiên thanh toán đó tìm ra đơn hàng
+    //             if (session.data.length === 0) {
+    //                 console.log("No session found for this payment_intent");
+    //                 return response.status(400).send("No session found");
+    //             }
 
-                userData.enrolledCourses.push(courseData._id);
-                await userData.save();
-
-                purchaseData.status = 'completed';
-                await purchaseData.save();
+    //             const { purchaseId } = session.data[0].metadata;
+    //             console.log("purchaseId", purchaseId);
 
 
-                break;
+    //             const purchaseData = await Purchase.findById(purchaseId);
+    //             const userData = await User.findById(purchaseData.userId);
+    //             const courseData = await Course.findById(purchaseData.courseId.toString());
+    //             console.log('userData', userData);
+    //             console.log('courseData', courseData);
 
-            } catch (error) {
-                console.error("Error in succeeded handler:", error);
-                return response.status(500).send("Internal error");
-            }
-        }
+    //             courseData.enrolledStudents.push(userData);
+    //             await courseData.save();
 
-        case 'payment_intent.payment_failed': {
-            try {
-                const paymentIntent = event.data.object;
-                const paymentIntentId = paymentIntent.id;
+    //             userData.enrolledCourses.push(courseData._id);
+    //             await userData.save();
 
-                const session = await stripeInstance.checkout.sessions.list({
-                    payment_intent: paymentIntentId
-                });
+    //             purchaseData.status = 'completed';
+    //             await purchaseData.save();
 
-                if (!session.data || session.data.length === 0) {
-                    console.log("No session found");
-                    return response.status(400).send("Session not found");
-                }
 
-                const { purchaseId } = session.data[0].metadata;
-                const purchaseData = await Purchase.findById(purchaseId);
+    //             break;
 
-                purchaseData.status = 'failed';
-                await purchaseData.save();
-            } catch (err) {
-                console.error("Error handling failed:", err);
-                return response.status(500).send("Internal error");
-            }
+    //         } catch (error) {
+    //             console.error("Error in succeeded handler:", error);
+    //             return response.status(500).send("Internal error");
+    //         }
+    //     }
 
-            break;
-        }
+    //     case 'payment_intent.payment_failed': {
+    //         try {
+    //             const paymentIntent = event.data.object;
+    //             const paymentIntentId = paymentIntent.id;
 
-        default:
-            console.log(`Unhandled event type ${event.type}`);
+    //             const session = await stripeInstance.checkout.sessions.list({
+    //                 payment_intent: paymentIntentId
+    //             });
+
+    //             if (!session.data || session.data.length === 0) {
+    //                 console.log("No session found");
+    //                 return response.status(400).send("Session not found");
+    //             }
+
+    //             const { purchaseId } = session.data[0].metadata;
+    //             const purchaseData = await Purchase.findById(purchaseId);
+
+    //             purchaseData.status = 'failed';
+    //             await purchaseData.save();
+    //         } catch (err) {
+    //             console.error("Error handling failed:", err);
+    //             return response.status(500).send("Internal error");
+    //         }
+
+    //         break;
+    //     }
+
+    //     default:
+    //         console.log(`Unhandled event type ${event.type}`);
+    // }
+
+    // response.json({ received: true });
+
+    const paymentIntent = event.data?.object;
+    const paymentIntentId = paymentIntent?.id;
+    const purchaseId = paymentIntent?.metadata?.purchaseId;
+
+    if (!purchaseId) {
+        console.warn("⚠️ purchaseId not found in paymentIntent metadata");
+        return response.status(200).send("Ignored: No purchaseId");
     }
 
-    response.json({ received: true });
+    try {
+        if (event.type === 'payment_intent.succeeded') {
+            console.log('✅ Payment succeeded for:', paymentIntentId);
 
+            const purchaseData = await Purchase.findById(purchaseId);
+            const userData = await User.findById(purchaseData.userId);
+            const courseData = await Course.findById(purchaseData.courseId.toString());
+
+            courseData.enrolledStudents.push(userData._id);
+            await courseData.save();
+
+            userData.enrolledCourses.push(courseData._id);
+            await userData.save();
+
+            purchaseData.status = 'completed';
+            await purchaseData.save();
+
+            console.log("🎉 Enrollment completed successfully");
+
+        } else if (event.type === 'payment_intent.payment_failed') {
+            console.log('❌ Payment failed for:', paymentIntentId);
+
+            const purchaseData = await Purchase.findById(purchaseId);
+            purchaseData.status = 'failed';
+            await purchaseData.save();
+        } else {
+            console.log(`ℹ️ Unhandled event type: ${event.type}`);
+        }
+
+        return response.status(200).json({ received: true });
+
+    } catch (err) {
+        console.error("💥 Error in webhook handler:", err);
+        return response.status(200).send("Webhook received with error");
+    }
 };

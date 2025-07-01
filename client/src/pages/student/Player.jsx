@@ -159,6 +159,7 @@ const Player = () => {
                                         {chapter.chapterContent.length} {chapter.chapterContent.length > 1 ? 'lectures' : 'lecture'} - {calculateChapterTime(chapter)}
                                     </p>
                                 </div>
+
                                 <div className={`overflow-hidden transition-all duration-300 ${openSections[index] ? 'max-h-96' : 'max-h-0'}  `}>
                                     <ul className="list-disc md:pl-10 pl-4 pr-4 py-2 text-gray-600 border-t border-gray-300">
                                         {chapter.chapterContent.map((lecture, i) => (
